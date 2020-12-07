@@ -1,25 +1,52 @@
 package com.talkdesk.ZoomMiddleware;
 
+import com.talkdesk.ZoomMiddleware.model.Agent;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.*;
 import org.springframework.util.*;
 import org.json.*;
 import java.util.*;
 import java.lang.*;
+import java.io.*;
+import java.security.*;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 
 public class ZoomService {
 
-  public static String get_token(){
+  private static String hmacEncode(String data, String key) throws Exception {
+    Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
+    SecretKeySpec secret_key = new SecretKeySpec(key.getBytes(), "HmacSHA256");
+    sha256_HMAC.init(secret_key);
+
+    return Base64.getUrlEncoder().withoutPadding().encodeToString(sha256_HMAC.doFinal(data.getBytes()));
+  }
 
 
+  public static String create_token(){
+    String HARDCODED_KEY = "B7T8fqeJRJeW0TdTCBLBfw";
+    String HARDCODED_SECRET = "uGKFA2zQF0BJNR6uX2dDdgVeaaTNwwUWNcsD";
+    String JWT_HEADER = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
+    String base64_JWT_HEADER = Base64.getUrlEncoder().withoutPadding().encodeToString(JWT_HEADER.getBytes());
+    long timeSecs = (System.currentTimeMillis() / 1000) + 120; //jwt token expires 2 minutes from now
 
-    return "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOm51bGwsImlzcyI6IkI3VDhmcWVKUkplVzBUZFRDQkxCZnciLCJleHAiOjE2NDA5MDg0NDAsImlhdCI6MTYwNDA5MzEzOH0.QH0tIjbMaJpZ8_QbuckbqScHtTuI6cEGrILflTE1JXk";
+    String JWT_PAYLOAD = "{\"iss\": \"" + HARDCODED_KEY + "\",\"exp\": \"" + String.valueOf(timeSecs) + "\"}";
+    String base64_JWT_PAYLOAD = Base64.getUrlEncoder().withoutPadding().encodeToString(JWT_PAYLOAD.getBytes());
+
+    try {
+          String base64_JWT_SIGNATURE = hmacEncode(base64_JWT_HEADER + "." + base64_JWT_PAYLOAD, HARDCODED_SECRET);
+          System.out.println(base64_JWT_HEADER + "." + base64_JWT_PAYLOAD + "." + base64_JWT_SIGNATURE);
+          return base64_JWT_HEADER + "." + base64_JWT_PAYLOAD + "." + base64_JWT_SIGNATURE;
+       } catch (Exception e) {
+          throw new RuntimeException("Unable to generate a JWT token.");
+       }
   }
 
   public static List<Agent> get_agents(){
     List<Agent> agents = new ArrayList<Agent>();
 
-    String token = ZoomService.get_token();
+    String token = ZoomService.create_token();
 
     RestTemplate restTemplate = new RestTemplate();
     HttpHeaders headers = new HttpHeaders();
@@ -58,7 +85,7 @@ public class ZoomService {
           JSONArray j_arr = contact.getJSONArray("direct_numbers");
           if( j_arr.length() > 0){
             String phone = j_arr.getString(0);
-            a.addNumber(phone);
+            a.setNumber(phone);
           }
         }
 

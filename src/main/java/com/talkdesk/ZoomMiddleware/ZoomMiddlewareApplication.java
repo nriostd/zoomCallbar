@@ -1,5 +1,7 @@
 package com.talkdesk.ZoomMiddleware;
 
+import com.talkdesk.ZoomMiddleware.model.Agent;
+import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -20,12 +22,16 @@ public class ZoomMiddlewareApplication implements CommandLineRunner{
 		repo.deleteAll();
 
 		//Call to test get agents method
-		ZoomService.get_agents();
+		List<Agent> agents = ZoomService.get_agents();
+		for (Agent a : agents){
+			System.out.println(a);
+			repo.save(a);
+		}
 
 		//Save a couple of agents
 		Agent Nick = new Agent("Nick", "123", "Active");
-		Nick.addNumber("+14089668696");
-		Nick.updatePresence("Offline");
+		Nick.setNumber("+14089668696");
+		Nick.setPresence("Offline");
 		Agent Mike = new Agent("Mike", "111", "Offline");
 		repo.save(Nick);
 		repo.save(Mike);
