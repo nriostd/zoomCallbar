@@ -1,6 +1,8 @@
 package com.talkdesk.ZoomMiddleware;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import com.talkdesk.ZoomMiddleware.model.Agent;
+import com.talkdesk.ZoomMiddleware.model.Notification;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.*;
 import org.springframework.util.*;
@@ -14,6 +16,9 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 
 public class ZoomService {
+
+  @Autowired
+  private static AgentRepository repo;
 
   private static String hmacEncode(String data, String key) throws Exception {
     Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
@@ -43,7 +48,23 @@ public class ZoomService {
        }
   }
 
-  public static List<Agent> get_agents(){
+  public static JSONObject store_agents_request(String url, String next_page_token){
+    var final_url = url;
+    if(next_page_token != ""){
+      final_url = url + "&next_page_token=" + next_page_token;
+    }
+    String token = ZoomService.create_token();
+    RestTemplate restTemplate = new RestTemplate();
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("Authorization", String.format("Bearer %s", token));
+    HttpEntity entity = new HttpEntity(headers);
+    ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+    JSONObject response_json = new JSONObject(response.getBody());
+
+    return response_json;
+  }
+
+  public static List<Agent> store_agents(){
     List<Agent> agents = new ArrayList<Agent>();
 
     String token = ZoomService.create_token();
@@ -56,7 +77,6 @@ public class ZoomService {
 
     String next_token = "";
     do {
-      //TODO need to find a way to remove that token below
       if (next_token != ""){
         url = url + "&next_page_token=" + next_token;
       }
@@ -64,8 +84,6 @@ public class ZoomService {
       JSONObject response_json = new JSONObject(response.getBody());
       String rem = "&next_page_token=" + next_token;
       url = url.replace(rem, "");
-      System.out.println("Response JSON is: ");
-      System.out.println(response_json);
       next_token = response_json.getString("next_page_token");
       JSONArray ja_contacts = response_json.getJSONArray("contacts");
       int contacts_len = ja_contacts.length();
@@ -85,7 +103,7 @@ public class ZoomService {
           JSONArray j_arr = contact.getJSONArray("direct_numbers");
           if( j_arr.length() > 0){
             String phone = j_arr.getString(0);
-            a.setNumber(phone);
+            a.setPhone(phone);
           }
         }
 
@@ -93,19 +111,24 @@ public class ZoomService {
       }
     } while(next_token != "");
 
-    for (Agent agent : agents){
-			System.out.println(agent);
-		}
+    return agents;
+  }
 
+  public static List<Agent> retrieve_all_agents(){
+    List<Agent> agents = repo.findAll();
     return agents;
   }
 
 
-  public static Agent update_presence(Agent a, String new_presence){
-
-
-
-    return a;
+  public static Agent update_presence(Notification notification){
+    String notification_zoomID = notification.getPayload().getObject().getId();
+    String notification_status = notification.getPayload().getObject().getPresenceStatus();
+    Agent agent_to_update = repo.findByZoomId(notification_zoomID);
+    agent_to_update.setPresence(notification_status);
+    System.out.println("--Agent Presence Updated--");
+    System.out.println(agent_to_update);
+    repo.save(agent_to_update);
+    return agent_to_update;
   }
 
 

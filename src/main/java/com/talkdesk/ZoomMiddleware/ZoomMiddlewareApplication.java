@@ -22,15 +22,19 @@ public class ZoomMiddlewareApplication implements CommandLineRunner{
 		repo.deleteAll();
 
 		//Call to test get agents method
-		List<Agent> agents = ZoomService.get_agents();
+		List<Agent> agents = ZoomService.store_agents();
+		System.out.println("Agents returned from store_agents()");
+		System.out.println("-------------------------------");
 		for (Agent a : agents){
 			System.out.println(a);
 			repo.save(a);
 		}
+		System.out.println();
 
 		//Save a couple of agents
 		Agent Nick = new Agent("Nick", "123", "Active");
-		Nick.setNumber("+14089668696");
+		Nick.setPhone("+14089668696");
+		Nick.setAssociatedAccountId("112244");
 		Nick.setPresence("Offline");
 		Agent Mike = new Agent("Mike", "111", "Offline");
 		repo.save(Nick);
@@ -44,11 +48,16 @@ public class ZoomMiddlewareApplication implements CommandLineRunner{
 		}
 		System.out.println();
 
-		//fetch an individual customer
+		//fetch customers using custom repo methods
 
 		System.out.println("Agent found with findByZoomId('123'):");
 		System.out.println("-------------------------------------");
 		System.out.println(repo.findByZoomId("123"));
+		System.out.println();
+
+		System.out.println("Agent found with findByAssociatedAccountId('112244'):");
+		System.out.println("-------------------------------------");
+		System.out.println(repo.findByAssociatedAccountId("112244"));
 
 	}
 

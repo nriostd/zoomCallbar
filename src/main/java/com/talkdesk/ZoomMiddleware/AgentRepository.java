@@ -7,4 +7,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 public interface AgentRepository extends MongoRepository<Agent, String> {
 
   public Agent findByZoomId(String zoomId);
+  public List<Agent> findByAssociatedAccountId(String associatedAccountId);
 }
