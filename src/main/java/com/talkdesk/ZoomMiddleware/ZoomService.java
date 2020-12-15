@@ -49,7 +49,7 @@ public class ZoomService {
   }
 
   public static JSONObject store_agents_request(String url, String next_page_token){
-    var final_url = url;
+    String final_url = url;
     if(next_page_token != ""){
       final_url = url + "&next_page_token=" + next_page_token;
     }
@@ -58,32 +58,18 @@ public class ZoomService {
     HttpHeaders headers = new HttpHeaders();
     headers.set("Authorization", String.format("Bearer %s", token));
     HttpEntity entity = new HttpEntity(headers);
-    ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+    ResponseEntity<String> response = restTemplate.exchange(final_url, HttpMethod.GET, entity, String.class);
     JSONObject response_json = new JSONObject(response.getBody());
-
     return response_json;
   }
 
   public static List<Agent> store_agents(){
     List<Agent> agents = new ArrayList<Agent>();
-
-    String token = ZoomService.create_token();
-
-    RestTemplate restTemplate = new RestTemplate();
-    HttpHeaders headers = new HttpHeaders();
-    headers.set("Authorization", String.format("Bearer %s", token));
-    HttpEntity entity = new HttpEntity(headers);
-    String url = "https://api.zoom.us/v2/contacts?page_size=25&query_presence_status=true";
+    String url = "https://api.zoom.us/v2/contacts?page_size=2&query_presence_status=true";
 
     String next_token = "";
     do {
-      if (next_token != ""){
-        url = url + "&next_page_token=" + next_token;
-      }
-      ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-      JSONObject response_json = new JSONObject(response.getBody());
-      String rem = "&next_page_token=" + next_token;
-      url = url.replace(rem, "");
+      JSONObject response_json = ZoomService.store_agents_request(url, next_token);
       next_token = response_json.getString("next_page_token");
       JSONArray ja_contacts = response_json.getJSONArray("contacts");
       int contacts_len = ja_contacts.length();
@@ -91,7 +77,7 @@ public class ZoomService {
       for(int i = 0; i < contacts_len; i++){
         JSONObject contact = new JSONObject();
         contact = ja_contacts.getJSONObject(i);
-        String name = contact.getString("first_name") + contact.getString("last_name");
+        String name = contact.getString("first_name") + " " + contact.getString("last_name");
         String id = contact.getString("id");
         String presence = contact.getString("presence_status");
 
@@ -120,7 +106,11 @@ public class ZoomService {
   }
 
 
-  public static Agent update_presence(Notification notification){
+  public static Agent process_notification(Notification notification){
+
+  }
+
+  public static Agent update_presence(Payload payload){
     String notification_zoomID = notification.getPayload().getObject().getId();
     String notification_status = notification.getPayload().getObject().getPresenceStatus();
     Agent agent_to_update = repo.findByZoomId(notification_zoomID);
@@ -131,7 +121,17 @@ public class ZoomService {
     return agent_to_update;
   }
 
+  public static Agent user_created(Payload payload){
 
+  }
+
+  public static Agent user_deleted(Payload payload){
+
+  }
+
+  public static Agent user_updated(Payload payload){
+    
+  }
 
 
 }
