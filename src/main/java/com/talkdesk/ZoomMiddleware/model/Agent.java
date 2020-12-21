@@ -16,13 +16,16 @@ public class Agent {
   private String presence;
   private String phone;
   private String associatedAccountId;
+  private String email;
+  private String extension;
 
   public Agent(){
 
   }
 
-  public Agent(String name, String zoomId, String presence){
+  public Agent(String name, String email, String zoomId, String presence){
     this.name = name;
+    this.email = email;
     this.zoomId = zoomId;
     this.presence = presence;
   }

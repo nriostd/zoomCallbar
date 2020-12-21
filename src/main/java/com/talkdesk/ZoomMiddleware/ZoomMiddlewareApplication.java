@@ -32,11 +32,11 @@ public class ZoomMiddlewareApplication implements CommandLineRunner{
 		System.out.println();
 
 		//Save a couple of agents
-		Agent Nick = new Agent("Nick", "123", "Active");
+		Agent Nick = new Agent("Nick", "n@test.com", "123", "Active");
 		Nick.setPhone("+14089668696");
 		Nick.setAssociatedAccountId("112244");
 		Nick.setPresence("Offline");
-		Agent Mike = new Agent("Mike", "111", "Offline");
+		Agent Mike = new Agent("Mike", "m@test.com", "111", "Offline");
 		repo.save(Nick);
 		repo.save(Mike);
 
@@ -58,6 +58,13 @@ public class ZoomMiddlewareApplication implements CommandLineRunner{
 		System.out.println("Agent found with findByAssociatedAccountId('112244'):");
 		System.out.println("-------------------------------------");
 		System.out.println(repo.findByAssociatedAccountId("112244"));
+
+		System.out.println("Agent found with findByEmail('n@test.com'):");
+		System.out.println("-------------------------------------");
+		System.out.println(repo.findByAssociatedAccountId("n@test.com"));
+
+		String token = ZoomService.create_token();
+		System.out.println(token);
 
 	}
 

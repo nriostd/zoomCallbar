@@ -2,6 +2,7 @@ package com.talkdesk.ZoomMiddleware;
 
 import com.talkdesk.ZoomMiddleware.model.Agent;
 import com.talkdesk.ZoomMiddleware.model.Notification;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,16 +19,19 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequestMapping("/bespoke/zoom")
 public class Controller {
 
+  @Autowired
+  private ZoomService zoomService;
+
 
   @RequestMapping(value = "/agent", method = RequestMethod.GET)
     public ResponseEntity listAllAgents() {
-        List<Agent> response = ZoomService.retrieve_all_agents();
+        List<Agent> response = zoomService.retrieve_all_agents();
         return new ResponseEntity<>(response, HttpStatus.FOUND);
     }
 
     @RequestMapping(value = "/notify", method = RequestMethod.POST)
       public ResponseEntity handleNotifications(@RequestBody Notification notification) {
-          Agent response = ZoomService.update_presence(notification);
+          Agent response = zoomService.process_notification(notification);
           return new ResponseEntity<>(response, HttpStatus.OK);
       }
   }
