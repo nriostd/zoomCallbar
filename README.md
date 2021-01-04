@@ -1,5 +1,7 @@
 # zoomCallbar
 
+This middleware application will be responsible for authenticating with the Client’s Zoom account as well as storing the information that the Atlas app will populate its interface with. When this application starts up, it will perform an initial request in order to store the current agent details and presence. There will also be an endpoint to listen for event notifications from Zoom such that the application data is updated as soon as the Zoom account data is. More info [here](https://docs.google.com/document/d/1cxStjpv61mtNIxiQfji1KglzK5Y6XNsLizDnAC692oc/edit).
+
 Downloads
 * JDK 1.8 or later <https://www.oracle.com/java/technologies/javase-downloads.html>
 * Maven 3.2+ <https://www.java.com/en/download/>
