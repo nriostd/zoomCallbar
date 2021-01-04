@@ -61,7 +61,7 @@ public class Agent {
 
   @Override
   public String toString() {
-    return String.format("Agent[zoomId=%s, name='%s', presence='%s', phone='%s', associatedAccountId='%s']", zoomId, name, presence, phone, associatedAccountId);
+    return String.format("Agent[zoomId=%s, name='%s', presence='%s', phone='%s', associatedAccountId='%s', email='%s', extension='%s']", zoomId, name, presence, phone, associatedAccountId, email, extension);
   }
 
 }

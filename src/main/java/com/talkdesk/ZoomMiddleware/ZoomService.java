@@ -64,7 +64,7 @@ public class ZoomService {
     if (phone_numbers.length() > 0){
       JSONObject phone = new JSONObject();
       phone = phone_numbers.getJSONObject(0);
-      String number = phone.getSting("number");
+      String number = phone.getString("number");
       agent_to_update.setPhone(number);
     }
     return agent_to_update;
@@ -134,7 +134,7 @@ public class ZoomService {
   }
 
 
-  public Agent process_notification(Notification notification){
+  public Agent process_notification(Notification notification) throws Exception{
     String event = notification.getEvent();
     String tenant_id = notification.getPayload().getAccountId();
     String agent_zoom_id = notification.getPayload().getObject().getId();
@@ -161,17 +161,20 @@ public class ZoomService {
       case "user.updated":
         Agent needs_update = repo.findByZoomId(agent_zoom_id);
         Map<String, java.lang.Object> updated_props = notification.getPayload().getObject().getAdditionalProperties();
-        if( updated_props.containsKey("first_name") || updated_props.containsKey("last_name")){
-          needs_update.setName(updated_props.get("first_name") + " " + updated_props.get("last_name");)
+        System.out.println(updated_props);
+        if( updated_props.containsKey("first_name") || updated_props.containsKey("last_name") ){
+          needs_update.setName(updated_props.get("first_name") + " " + updated_props.get("last_name"));
         }
         if( updated_props.containsKey("email")){
-          needs_update.setEmail(updated_props.get("email"))
+          System.out.println(updated_props.get("email"));
+          needs_update.setEmail(updated_props.get("email").toString());
         }
         Agent updated_agent = ZoomService.update_agent_details(needs_update);
+        System.out.println(updated_agent);
         repo.save(updated_agent);
         return updated_agent;
       default:
-        return new Agent();
+        throw new IllegalArgumentException("Improper webhook notification received"); 
     }
 
   }
