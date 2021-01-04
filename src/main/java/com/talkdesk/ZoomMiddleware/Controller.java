@@ -31,7 +31,11 @@ public class Controller {
 
     @RequestMapping(value = "/notify", method = RequestMethod.POST)
       public ResponseEntity handleNotifications(@RequestBody Notification notification) {
+        try {
           Agent response = zoomService.process_notification(notification);
           return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+          throw new RuntimeException("Improper Notification Webhook received.");
+        }
       }
   }
